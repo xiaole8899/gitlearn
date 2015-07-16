@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<taglib xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd"
+	version="2.1">
+
+	<description>一些便利的小标签</description>
+	<display-name>Dppc-Tags</display-name>
+	<tlib-version>1.0</tlib-version>
+	<short-name>dppc</short-name>
+	<uri>/dppc-load</uri>
+	<tag>
+		<description>
+		载入css或js文件到jsp页面里
+    	</description>
+		<name>resource</name>
+		<tag-class>org.dppc.mtrace.frame.tags.LoadGoods</tag-class>
+		<body-content>empty</body-content>
+		
+		<attribute>
+			<description>
+			用于Css文件导入时确定渲染类型
+	        </description>
+			<name>goodsList</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+</taglib>
