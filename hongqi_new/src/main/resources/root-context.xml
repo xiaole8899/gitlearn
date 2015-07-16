@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 扫描除了 @Controller 之外的所有Spring提供的Bean注解 比如@Service @Repositories 等等 多个包的话直接用逗号分隔即可 -->
+	<context:component-scan base-package="org.dppc.mtrace, org.dppc.cardws">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Controller" />
+	</context:component-scan>
+
+
+	<!-- 读进来个属性文件 这里只读一个jdbc.properties -->
+	<context:property-placeholder 
+		location="classpath:jdbc.properties, classpath:balance.xml"
+		ignore-resource-not-found="true" />
+
+
+	<!-- 数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+
+		<!-- 对DBCP的一些额外的优化 -->
+		<!-- 最小空闲个数 -->
+		<property name="minIdle" value="2" />
+		<!-- 连接的空闲时间判断 间隔为5分钟判断一次 -->
+		<property name="minEvictableIdleTimeMillis" value="5" />
+		<!-- 初始化连接数为3 -->
+		<property name="initialSize" value="3" />
+		<!-- （防止短链）取得对象时是否进行验证，检查对象是否有效 -->
+		<property name="testOnBorrow" value="true" />
+		<!-- 空闲时是否进行检验 -->
+		<property name="testWhileIdle" value="true" />
+		<!-- 返回对象时是否进行验证 -->
+		<property name="testOnReturn" value="true" />
+		<!-- 强制自我中断避免出现连接过久资源耗尽 -->
+		<property name="removeAbandoned" value="true" />
+		<!-- 自我中断时间 单位是秒 -->
+		<property name="removeAbandonedTimeout" value="300" />
+		<!--记录中断事件 -->
+		<property name="logAbandoned" value="true" />
+	</bean>
+
+
+	<!-- Hibername SessionFactory -->
+	<bean id="sessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<property name="packagesToScan" value="org.dppc.mtrace.app" />
+		<property name="dataSource" ref="dataSource" />
+		<property name="hibernateProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+				<prop key="hibernate.hbm2ddl.auto">update</prop>
+				<prop key="hibernate.show_sql">true</prop>
+				<prop key="hiberante.format_sql">true</prop>
+				<!--  
+				<prop key="hibernate.max_fetch_depth">1</prop>
+				<prop key="hibernate.default_batch_fetch_size">30</prop>
+				-->
+			</props>
+		</property>
+	</bean>
+
+
+	<!-- 事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager"
+		p:sessionFactory-ref="sessionFactory" />
+
+
+	<!-- 注解式事务，在@Service 或其方法上使用 @Transaction 来加事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+	
+	
+	
+
+</beans>
